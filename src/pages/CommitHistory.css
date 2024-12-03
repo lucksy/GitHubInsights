@@ -1,8 +1,13 @@
+
+.header h1 {
+    padding: 20px 40px 10px 40px;
+}
 .commit-history {
-    max-width: 800px;
+    width: 100%;
     margin: 0 auto;
     min-height: 100vh;
     background: #fff;
+
   }
   
   .filters-container {
@@ -20,14 +25,23 @@
   .search-container :global(.tds-textfield) {
     width: 100%;
   }
-  
+  .filters {
+    width: 430px;
+    padding: 20px 40px 40px 40px;
+  }
   .date-filters {
     display: flex;
     gap: 16px;
+    margin-top: 20px;
+    
   }
   
   .commits-container {
     position: relative;
+  }
+
+  .commits-list-wrap {
+    padding: 20px 40px 40px 40px;
   }
   
   .date-group {
@@ -49,6 +63,10 @@
     padding: 12px 0;
     border-bottom: 1px solid #f0f2f4;
   }
+  .commit-item:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+  }
   
   .commit-item:last-child {
     border-bottom: none;
@@ -63,15 +81,20 @@
   }
   
   .commit-message {
-    font-size: 14px;
+    font-size: 16px;
     color: #1B273D;
     margin-bottom: 4px;
     line-height: 1.4;
+    margin-top: 0;
+    padding-top: 0;
+    font-weight: 700;
   }
   
   .commit-item .text-gray-500 {
     font-size: 13px;
     color: #6B7280;
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
   
   .commit-item:hover {
@@ -98,7 +121,9 @@
     color: #6B7280;
     font-size: 14px;
   }
-  
+  .pagination-container {
+    padding: 20px 40px 40px 40px;
+  }
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .commit-history {

@@ -102,7 +102,14 @@ body, html {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
+}
+
+.auth-wrap  {
+  display: flex;
   justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 
 .footer {
@@ -146,4 +153,49 @@ main {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px 20px 0 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+.login-card input {
+  width: 80%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.login-card button {
+  padding: 10px 40px;
+  margin: 10px 0;
+  border-radius: 5px;
+  background-color: var(--tds-footer-main-background);
+  color: #FFF;
+}
+.login-card button:hover {
+  cursor: pointer;
+}
+.login-card button:disabled:hover {
+  cursor: not-allowed;
+}
+
+.login-card button:disabled {
+  background-color: #ccc;
+  color: #000;
+
+}
+
+.login-info {
+  margin: 20px -20px 0 -20px;
+  padding: 20px;
+  background-color: #f1f1f1;
+}
+.login-info  ol {
+  margin: 0;
+  padding: 0 0 0 16px;
 }

@@ -2,7 +2,7 @@ import {
     GitHubUser,
     Repository,
     Commit,
-    SearchCommitsResponse
+    SearchCommitsResponse,
 } from './types';
 
 class GitHubService {
@@ -48,7 +48,6 @@ class GitHubService {
         return response.json();
     }
 
-    // Auth and User methods
     async validateToken(token: string): Promise<GitHubUser> {
         this.token = token;
         return this.getCurrentUser();
@@ -58,14 +57,12 @@ class GitHubService {
         return this.fetchJson<GitHubUser>(`${this.baseUrl}/user`);
     }
 
-    // Repository methods
     async getUserRepositories(username: string): Promise<Repository[]> {
         return this.fetchJson<Repository[]>(
             `${this.baseUrl}/users/${username}/repos?per_page=100`
         );
     }
 
-    // Search commits method
     async searchUserCommits(
         username: string,
         page: number = 1,
@@ -74,16 +71,22 @@ class GitHubService {
         startDate: Date | null = null,
         endDate: Date | null = null
     ): Promise<SearchCommitsResponse> {
+        // Base query always includes the author
         let query = `author:${username}`;
 
-        if (searchTerm) {
-            query += ` ${searchTerm} in:message`;
+        // Add search term if provided, without restricting to commit message
+        if (searchTerm.trim()) {
+            // Wrap the search term in quotes if it contains spaces
+            const formattedSearchTerm = searchTerm.includes(' ')
+                ? `"${searchTerm.trim()}"`
+                : searchTerm.trim();
+            query += ` ${formattedSearchTerm}`;
         }
 
+        // Add date filters if provided
         if (startDate) {
             query += ` committer-date:>=${startDate.toISOString().split('T')[0]}`;
         }
-
         if (endDate) {
             query += ` committer-date:<=${endDate.toISOString().split('T')[0]}`;
         }
@@ -97,7 +100,6 @@ class GitHubService {
         });
     }
 
-    // Commit methods
     async getRepositoryCommits(
         owner: string,
         repo: string,
@@ -116,7 +118,6 @@ class GitHubService {
         return this.fetchJson<Commit[]>(url);
     }
 
-    // Language statistics
     async calculateLanguageStats(repos: Repository[]): Promise<Record<string, number>> {
         const languageCounts: { [key: string]: number } = {};
         let totalLanguages = 0;
@@ -134,7 +135,6 @@ class GitHubService {
         }, {} as Record<string, number>);
     }
 
-    // Commit statistics
     async getCommitStats(username: string, repos: Repository[]): Promise<{
         totalCommits: number;
         monthlyCommits: Record<string, number>;
@@ -178,7 +178,6 @@ class GitHubService {
         };
     }
 
-    // Repository languages
     async getRepositoryLanguages(owner: string, repo: string): Promise<Record<string, number>> {
         return this.fetchJson<Record<string, number>>(
             `${this.baseUrl}/repos/${owner}/${repo}/languages`

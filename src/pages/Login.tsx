@@ -31,10 +31,10 @@ const Login = () => {
 
   return (
     <AuthLayout>
-      <div className="flex flex-col flex-grow">
-        <div className="mb-8">
-          <h1 className="text-xl text-[#0D1C2E]">Log in to GitHub</h1>
-          <p className="text-gray-500">Enter your Personal Access Token</p>
+      <div className="login-card lex flex-col flex-grow">
+        <div className="">
+          <h1 className="">Log in</h1>
+          <p className="">Enter your Personal Access Token</p>
         </div>
 
         {error && (
@@ -62,7 +62,7 @@ const Login = () => {
           </button>
         </div>
 
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="login-info">
           <p>Need a GitHub token? Follow these steps:</p>
           <ol className="list-decimal ml-5 mt-2">
             <li>Go to GitHub Settings</li>

@@ -18,6 +18,8 @@ interface FilterParams {
 
 const ITEMS_PER_PAGE = 30;
 const SEARCH_DELAY = 500;
+const CACHE_KEY = 'github_commits_cache';
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
 const CommitHistory = () => {
   const [commits, setCommits] = useState<GroupedCommits>({});
@@ -29,11 +31,29 @@ const CommitHistory = () => {
     startDate: null,
     endDate: null,
   });
-  const [debouncedFilters, setDebouncedFilters] = useState<FilterParams>(filters);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const { user } = useAuth();
   const searchTimeout = useRef<number>();
+
+  const loadFromCache = useCallback(() => {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        return data;
+      }
+      localStorage.removeItem(CACHE_KEY);
+    }
+    return null;
+  }, []);
+
+  const saveToCache = useCallback((data: { commits: GroupedCommits; totalCount: number }) => {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  }, []);
 
   const groupCommitsByDate = useCallback((items: CommitItem[]): GroupedCommits => {
     return items.reduce((groups: GroupedCommits, commit: CommitItem) => {
@@ -50,85 +70,68 @@ const CommitHistory = () => {
   }, []);
 
   useEffect(() => {
-    const fetchInitialCommits = async () => {
-      if (!user) return;
+    const fetchCommits = async () => {
+        if (!user) return;
 
-      try {
-        setInitialLoading(true);
-        const response = await githubService.searchUserCommits(
-          user.login,
-          1,
-          ITEMS_PER_PAGE,
-          '',
-          null,
-          null
-        );
+        try {
+            // Show loading state for all searches
+            setListLoading(true);
 
-        setTotalCount(response.total_count);
-        setCommits(groupCommitsByDate(response.items));
-      } catch (err) {
-        console.error('Failed to fetch commits:', err);
-        setError('Failed to load commit history');
-      } finally {
-        setInitialLoading(false);
-      }
+            // Only try cache for initial, unfiltered load
+            if (page === 1 && !filters.searchTerm && !filters.startDate && !filters.endDate) {
+                const cachedData = loadFromCache();
+                if (cachedData) {
+                    setCommits(cachedData.commits);
+                    setTotalCount(cachedData.totalCount);
+                    setInitialLoading(false);
+                    setListLoading(false);
+                    return;
+                }
+            }
+
+            const response = await githubService.searchUserCommits(
+                user.login,
+                page,
+                ITEMS_PER_PAGE,
+                filters.searchTerm,
+                filters.startDate ? new Date(filters.startDate) : null,
+                filters.endDate ? new Date(filters.endDate) : null
+            );
+
+            const groupedCommits = groupCommitsByDate(response.items);
+            setCommits(groupedCommits);
+            setTotalCount(response.total_count);
+
+            // Only cache unfiltered results
+            if (!filters.searchTerm && !filters.startDate && !filters.endDate) {
+                saveToCache({
+                    commits: groupedCommits,
+                    totalCount: response.total_count
+                });
+            }
+        } catch (err) {
+            console.error('Failed to fetch commits:', err);
+            setError('Failed to load commit history');
+        } finally {
+            setInitialLoading(false);
+            setListLoading(false);
+        }
     };
 
-    fetchInitialCommits();
-  }, [user, groupCommitsByDate]);
+    fetchCommits();
+}, [user, page, filters, groupCommitsByDate, loadFromCache, saveToCache]);
 
-  // Debounce filters changes
-  useEffect(() => {
+  const handleSearchChange = (e: FormEvent<HTMLTdsTextFieldElement>) => {
+    const target = e.target as HTMLInputElement;
+    
     if (searchTimeout.current) {
       window.clearTimeout(searchTimeout.current);
     }
 
     searchTimeout.current = window.setTimeout(() => {
-      setDebouncedFilters(filters);
+      setFilters(prev => ({ ...prev, searchTerm: target.value }));
       setPage(1);
     }, SEARCH_DELAY);
-
-    return () => {
-      if (searchTimeout.current) {
-        window.clearTimeout(searchTimeout.current);
-      }
-    };
-  }, [filters]);
-
-  // Fetch filtered commits
-  useEffect(() => {
-    const fetchCommits = async () => {
-      if (!user) return;
-
-      try {
-        setListLoading(true);
-        const response = await githubService.searchUserCommits(
-          user.login,
-          page,
-          ITEMS_PER_PAGE,
-          debouncedFilters.searchTerm,
-          debouncedFilters.startDate ? new Date(debouncedFilters.startDate) : null,
-          debouncedFilters.endDate ? new Date(debouncedFilters.endDate) : null
-        );
-
-        setTotalCount(response.total_count);
-        setCommits(groupCommitsByDate(response.items));
-      } catch (err) {
-        console.error('Failed to fetch commits:', err);
-        setError('Failed to load commit history');
-      } finally {
-        setListLoading(false);
-      }
-    };
-
-    if (!initialLoading) {
-      fetchCommits();
-    }
-  }, [user, page, debouncedFilters, groupCommitsByDate, initialLoading]);
-
-  const handleSearchChange = (e: FormEvent<HTMLTdsTextFieldElement>) => {
-    const target = e.target as HTMLInputElement;
-    setFilters(prev => ({ ...prev, searchTerm: target.value }));
   };
 
   const handleDateChange = (type: 'start' | 'end') => (e: CustomEvent) => {
@@ -137,6 +140,7 @@ const CommitHistory = () => {
       ...prev,
       [type === 'start' ? 'startDate' : 'endDate']: value
     }));
+    setPage(1);
   };
 
   const formatTimeAgo = (dateString: string): string => {
@@ -164,77 +168,104 @@ const CommitHistory = () => {
     return <TdsMessage variant="error">{error}</TdsMessage>;
   }
 
+  const handleCommitClick = (htmlUrl: string) => {
+    window.open(htmlUrl, '_blank', 'noopener noreferrer');
+  };
+
   return (
     <div className="commit-history">
-        <h1 className="text-4xl font-bold mb-8">MY COMMITS</h1>
-      <div className="filters-container">
-        <div className="search-container">
+      <div className="header p-4">
+        <h1 className="text-2xl font-bold mb-4">Commits</h1>
+        
+        <div className="filters flex flex-col md:flex-row gap-4">
+        <div className="text-filters flex gap-4">
           <TdsTextField
             type="text"
-            placeholder="Search"
+            placeholder="Search commits..."
             value={filters.searchTerm}
             onInput={handleSearchChange}
           />
-        </div>
-        
-        <div className="date-filters">
-          <TdsDatetime
-            label="From"
-            value={filters.startDate || ''}
-            onTdsChange={handleDateChange('start')}
-            max={filters.endDate || undefined}
-          />
-          <TdsDatetime
-            label="To"
-            value={filters.endDate || ''}
-            onTdsChange={handleDateChange('end')}
-            min={filters.startDate || undefined}
-          />
+          </div>
+          
+          <div className="date-filters flex gap-4">
+            <TdsDatetime
+              label="From"
+              value={filters.startDate || ''}
+              onTdsChange={handleDateChange('start')}
+              max={filters.endDate || undefined}
+              disabled={listLoading}
+            />
+            <TdsDatetime
+              label="To"
+              value={filters.endDate || ''}
+              onTdsChange={handleDateChange('end')}
+              min={filters.startDate || undefined}
+              disabled={listLoading}
+            />
+          </div>
         </div>
       </div>
-  
-      <div className="commits-container">
+
+      <div className="commits-list-wrap p-4 relative">
         {listLoading && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
             <TdsSpinner />
           </div>
         )}
-  
+
         {Object.entries(commits).map(([date, dayCommits]) => (
-          <div key={date} className="date-group">
-            <h2>{date}</h2>
-            <div className="commit-list">
+          <div key={date} className="date-group mb-6">
+            <h2 className="text-lg font-semibold mb-2">{date}</h2>
+            <div className="commit-list space-y-2">
               {dayCommits.map((commit) => (
-                <div key={commit.sha} className="commit-item">
-                  <img
-                    src={commit.author?.avatar_url || '/api/placeholder/32/32'}
-                    alt={`${commit.commit.author.name}'s avatar`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="commit-message">{commit.commit.message}</p>
-                    <p className="text-gray-500">
-                      {commit.commit.author.name} authored {formatTimeAgo(commit.commit.author.date)}
-                    </p>
+                <div
+                key={commit.sha}
+                className="commit-item"
+                onClick={() => handleCommitClick(commit.html_url)}
+                role="button"
+                tabIndex={0}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleCommitClick(commit.html_url);
+                  }
+                }}
+              >
+                  <div className="commit-avatar">
+                    <img
+                      src={commit.author?.avatar_url || '/api/placeholder/32/32'}
+                      alt="Author avatar"
+                    />
+                  </div>
+                  <div className="commit-content">
+                    <div className="commit-message">
+                      {commit.commit.message}
+                    </div>
+                    <div className="commit-meta">
+                      <span>{commit.commit.author.name}</span>
+                      <span>authored {formatTimeAgo(commit.commit.author.date)}</span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         ))}
-  
+
         {Object.keys(commits).length === 0 && !listLoading && (
-          <div className="text-center">
-            No commits found {filters.searchTerm && 'matching your search'}
+          <div className="empty-state">
+            <p>No commits found</p>
+            {filters.searchTerm && <p>Try adjusting your search terms</p>}
           </div>
         )}
       </div>
-  
+
       {totalCount > ITEMS_PER_PAGE && (
-        <div className="sticky">
+        <div className="pagination-container">
           <Pagination
             currentPage={page}
             totalPages={Math.ceil(totalCount / ITEMS_PER_PAGE)}
             onPageChange={setPage}
+            disabled={listLoading}
           />
         </div>
       )}

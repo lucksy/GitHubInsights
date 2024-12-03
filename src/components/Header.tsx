@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   TdsHeader,
   TdsHeaderHamburger,
@@ -48,7 +49,9 @@ const Header = ({ className, toggleMobileNav }: HeaderProps) => {
           aria-expanded="false"
         />
 
-        <TdsHeaderTitle>GitHub Insights Dashboard</TdsHeaderTitle>
+        <Link to="/dashboard">
+          <TdsHeaderTitle>GitHub Insights Dashboard</TdsHeaderTitle>
+        </Link>
 
         {!isLoginPage && (
           <TdsHeaderDropdown onClick={() => {}} slot="end" no-dropdown-icon>

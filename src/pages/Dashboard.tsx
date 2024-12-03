@@ -32,7 +32,19 @@ ChartJS.register(
   Legend,
 );
 
+interface CachedData {
+  timestamp: number;
+  totalCommits: number;
+  monthlyCommits: Record<string, number>;
+  languageStats: Record<string, number>;
+  repositories: number;
+  followers: number;
+  following: number;
+}
+
 const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
+const CACHE_KEY = 'github_dashboard_data';
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 const GitHubDashboard = () => {
   const { user, token } = useAuth();
@@ -43,33 +55,84 @@ const GitHubDashboard = () => {
   const [languageStats, setLanguageStats] = useState<Record<string, number>>({});
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
-
   const navigate = useNavigate();
 
-  const fetchDashboardData = useCallback(async () => {
+  const loadCachedData = (): CachedData | null => {
+    const cachedDataStr = localStorage.getItem(CACHE_KEY);
+    if (!cachedDataStr) return null;
+
+    try {
+      const cachedData: CachedData = JSON.parse(cachedDataStr);
+      const now = Date.now();
+      
+      if (now - cachedData.timestamp <= CACHE_DURATION) {
+        return cachedData;
+      }
+      
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    } catch (err) {
+      console.error('Error parsing cached data:', err);
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+  };
+
+  const saveToCache = (data: CachedData) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        ...data,
+        timestamp: Date.now()
+      }));
+    } catch (err) {
+      console.error('Error caching data:', err);
+    }
+  };
+
+  const fetchDashboardData = useCallback(async (forceFetch: boolean = false) => {
     if (!token || !user) {
       setError('Authentication required');
       setLoading(false);
       return;
     }
 
+    if (!forceFetch) {
+      const cachedData = loadCachedData();
+      if (cachedData) {
+        setTotalCommits(cachedData.totalCommits);
+        setMonthlyCommits(cachedData.monthlyCommits);
+        setLanguageStats(cachedData.languageStats);
+        setLastRefresh(new Date(cachedData.timestamp));
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       setIsRefreshing(true);
       githubService.setToken(token);
 
-      // Fetch repositories and process data
       const repos = await githubService.getUserRepositories(user.login);
-
-      // Calculate language statistics
       const langStats = await githubService.calculateLanguageStats(repos);
-      setLanguageStats(langStats);
-
-      // Get commit statistics
       const commitStats = await githubService.getCommitStats(user.login, repos);
+
+      setLanguageStats(langStats);
       setTotalCommits(commitStats.totalCommits);
       setMonthlyCommits(commitStats.monthlyCommits);
       
-      setLastRefresh(new Date());
+      const now = new Date();
+      setLastRefresh(now);
+
+      saveToCache({
+        timestamp: now.getTime(),
+        totalCommits: commitStats.totalCommits,
+        monthlyCommits: commitStats.monthlyCommits,
+        languageStats: langStats,
+        repositories: user.public_repos,
+        followers: user.followers,
+        following: user.following
+      });
+
       setError('');
     } catch (err) {
       console.error('Dashboard data fetch error:', err);
@@ -80,18 +143,15 @@ const GitHubDashboard = () => {
     }
   }, [token, user]);
 
-  // Initial data fetch
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardData(false);
   }, [fetchDashboardData]);
 
-  // Set up auto-refresh interval
   useEffect(() => {
     const intervalId = setInterval(() => {
-      fetchDashboardData();
+      fetchDashboardData(true);
     }, REFRESH_INTERVAL);
 
-    // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, [fetchDashboardData]);
 
@@ -113,6 +173,10 @@ const GitHubDashboard = () => {
     const difference = nextRefresh.getTime() - new Date().getTime();
     const minutes = Math.floor(difference / 60000);
     return `${minutes} minutes`;
+  };
+
+  const handleRefreshClick = () => {
+    fetchDashboardData(true);
   };
 
   const last6Months = getLast12Months();
@@ -167,7 +231,6 @@ const GitHubDashboard = () => {
     },
   };
 
-  // Sort languages by percentage and take top ones
   const topLanguages: Record<string, number> = Object.entries(languageStats)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
@@ -225,7 +288,12 @@ const GitHubDashboard = () => {
         </div>
         
         <div className="tds-grid-item">
-          <TdsCard header="Total commits this year" modeVariant='secondary' onClick={() => navigate('/commits')}>
+          <TdsCard 
+            header="Total commits this year" 
+            modeVariant='secondary'
+            onClick={() => navigate('/commits')}
+            style={{ cursor: 'pointer' }}
+          >
             <div slot="body">
               <p className="tds-headline-01">{totalCommits.toLocaleString()}</p>
             </div>
@@ -267,8 +335,8 @@ const GitHubDashboard = () => {
           <h2 className="tds-u-mb4 tds-headline-03">Programming Languages <TdsIcon name="redirect" /></h2>
           <TdsCard header="Composition" modeVariant='secondary'>
             <div slot="body" style={{ height: '300px', padding: '20px' }}>
-                <div style={{ height: '250px', paddingBottom: '20px' }}>
-                    <Doughnut data={languageData} options={doughnutOptions} />
+              <div style={{ height: '250px', paddingBottom: '20px' }}>
+                <Doughnut data={languageData} options={doughnutOptions} />
               </div>
               <div className="tds-u-flex tds-u-justify-content-center tds-u-gap2 tds-u-mt4">
                 {Object.entries(topLanguages).map(([language, percentage], index) => (
@@ -288,23 +356,22 @@ const GitHubDashboard = () => {
         </div>
       </div>
 
-      <div className="tds-grid-fluid tds-u-p1 tds-u-mt3 footerTop footerTop">
+      <div className="tds-grid-fluid tds-u-p1 tds-u-mt3 footerTop">
         <div className="tds-grid-item w-full flex justify-center items-center gap-2 tds-u-p3" style={{ gridColumn: 'span 12' }}>
           <TdsIcon name="clock" className="text-gray-500" />
           <span className="text-sm text-gray-500 tds-u-m1">
             Last updated: {lastRefresh.toLocaleString()} • Next refresh in: {getTimeUntilNextRefresh()}
           </span>
           <button
-                onClick={fetchDashboardData}
-                disabled={isRefreshing}
-                className="flex items-center gap-1 p-2 rounded hover:bg-gray-100"
-              >
-                <TdsIcon name="refresh" />
-                {isRefreshing ? 'Refreshing...' : 'Refresh now'}
-              </button>
+            onClick={handleRefreshClick}
+            disabled={isRefreshing}
+            className="flex items-center gap-1 p-2 rounded hover:bg-gray-100"
+          >
+            <TdsIcon name="refresh" />
+            {isRefreshing ? 'Refreshing...' : 'Refresh now'}
+          </button>
         </div>
       </div>
-
     </div>
   );
 };

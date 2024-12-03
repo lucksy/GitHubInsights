@@ -39,3 +39,7 @@
     font-size: 24px;
   }
 }
+
+.card .card-heade, .card .header-subheader .header, .card .header-subheader slot[name=header] {
+  font: var(--tds-headline-04) !important;
+}

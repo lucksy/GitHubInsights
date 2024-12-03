@@ -13,9 +13,8 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
         <Header 
           pathname={window.location.pathname} 
           toggleMobileNav={() => {}} 
-          onLogout={() => {}} 
         />
-        <div className="flex flex-grow">
+        <div className="auth-wrap flex flex-grow">
           {/* Left side - Login Form */}
           <div className="w-[480px] bg-white p-8 flex flex-col">
             {children}

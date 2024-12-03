@@ -54,4 +54,5 @@ export interface CommitItem {
     repository: {
         name: string;
     };
+    html_url: string;
 }
