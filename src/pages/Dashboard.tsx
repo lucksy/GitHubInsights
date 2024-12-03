@@ -284,6 +284,7 @@ const GitHubDashboard = () => {
           <TdsCard 
             header="Number of projects" 
             modeVariant='secondary'
+            onClick={() => navigate('/commits')}
             data-testid="projects-card"
           >
             <div slot="body">
@@ -310,6 +311,7 @@ const GitHubDashboard = () => {
           <TdsCard 
             header="Followers" 
             modeVariant='secondary'
+            onClick={() => navigate('/commits')}
             data-testid="followers-card"
           >
             <div slot="body">
@@ -322,6 +324,7 @@ const GitHubDashboard = () => {
           <TdsCard 
             header="Following" 
             modeVariant='secondary'
+            onClick={() => navigate('/commits')}
             data-testid="following-card"
           >
             <div slot="body">
