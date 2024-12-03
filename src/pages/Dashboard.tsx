@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { TdsCard, TdsSpinner, TdsMessage, TdsIcon } from '@scania/tegel-react';
 import { useAuth } from '../contexts/AuthContext';
 import { githubService } from '../services/github/api';

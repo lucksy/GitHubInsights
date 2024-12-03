@@ -32,7 +32,7 @@ npm install
 npm run dev
 ```
 
-6. For cypress E2E test, you have to add GitHub access tokens to cypress.env.json:
+6. For cypress E2E test, you have to add GitHub access tokens to cypress.env.json.
 
 ```
       "GITHUB_TOKEN": "ghp_00000000000000000"

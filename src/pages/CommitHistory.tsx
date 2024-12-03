@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FormEvent, useCallback, useRef } from 'react';
+import { useEffect, useState, FormEvent, useCallback, useRef } from 'react';
 import { TdsTextField, TdsSpinner, TdsMessage, TdsDatetime } from '@scania/tegel-react';
 import { useAuth } from '../contexts/AuthContext';
 import { githubService } from '../services/github/api';
