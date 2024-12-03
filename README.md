@@ -2,6 +2,8 @@
 
 The GitHub Insights Dashboard is a web application that provides users with insights and analytics about their GitHub activity. It allows users to log in using their GitHub access token and view various statistics and visualizations related to their commits, repositories, and programming languages.
 
+## You can check the demo from here: https://git-hub-insights-woad.vercel.app/
+
 
 ## Setup the project in your local
 
