@@ -52,9 +52,6 @@ h6 {
 
 /* END - CSS Reset */
 
-
-@import url('@scania/tegel/dist/tegel/tegel.css');
-
 @media screen and (max-width: 650px) {
   .tabs {
     width: 300px;

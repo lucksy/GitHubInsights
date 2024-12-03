@@ -35,7 +35,6 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem('github_token')
-      console.log('Token in Dashboard:', token ? 'exists' : 'not found')
       
       if (!token) {
         navigate('/login')
@@ -43,8 +42,6 @@ export default function Dashboard() {
       }
 
       try {
-        // Fetch user data
-        console.log('Fetching user data...')
         const userResponse = await fetch('https://api.github.com/user', {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
@@ -53,15 +50,18 @@ export default function Dashboard() {
         })
 
         if (!userResponse.ok) {
-          throw new Error(`HTTP error! status: ${userResponse.status}`)
+          if (userResponse.status === 401) {
+            localStorage.removeItem('github_token')
+            navigate('/login')
+            throw new Error('Authentication failed. Please log in again.')
+          }
+          throw new Error(`Failed to fetch user data: ${userResponse.statusText}`)
         }
         
         const userData = await userResponse.json()
-        console.log('User data received:', userData)
         setUserData(userData)
 
-        // Fetch repositories
-        console.log('Fetching repositories...')
+        // Fetch repositories with correct Bearer token format
         const reposResponse = await fetch(userData.repos_url, {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
@@ -70,20 +70,16 @@ export default function Dashboard() {
         })
 
         if (!reposResponse.ok) {
-          throw new Error(`HTTP error! status: ${reposResponse.status}`)
+          throw new Error(`Failed to fetch repositories: ${reposResponse.statusText}`)
         }
 
         const reposData = await reposResponse.json()
-        console.log('Repositories received:', reposData.length)
         setRepos(reposData)
 
       } catch (err) {
-        console.error('Error fetching data:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch data')
-        if (err instanceof Error && err.message.includes('401')) {
-          localStorage.removeItem('github_token')
-          navigate('/login')
-        }
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data'
+        setError(errorMessage)
+        console.error('Error fetching data:', errorMessage)
       } finally {
         setLoading(false)
       }

@@ -8,7 +8,7 @@ interface LoginProps {
 }
 
 export default function Login({ onLogin }: LoginProps) {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(''); // 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
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();

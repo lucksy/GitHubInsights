@@ -1,6 +1,6 @@
 'use client';
 import Footer from './components/Footer';
-// import Header from '../../components/layouts/Navigation/Header';
+import Header from './components/Header';
 import './MainLayout.css';
 
 interface MainLayoutProps {
@@ -8,9 +8,9 @@ interface MainLayoutProps {
   pathname?: string;
   toggleMobileNav?: () => void;
   mode?: string;
-  modeVariant?: string; // Define the type for modeVariant
-  shouldRenderBreadcrumbs?: boolean; // Define the type for shouldRenderBreadcrumbs
-  shouldRenderModeSwitcher?: boolean; // Define the type for shouldRenderBreadcrumbs
+  modeVariant?: string;
+  shouldRenderBreadcrumbs?: boolean;
+  shouldRenderModeSwitcher?: boolean;
 }
 
 const MainLayout = ({
@@ -23,19 +23,13 @@ const MainLayout = ({
   return (
     <div className={`App mode-wrapper`}>
       <div
-        className={`mode-variant-wrapper tds-mode-variant-${
-          primaryVariant === 'on' ? 'primary' : 'secondary'
-        }`}
+        className={`mode-variant-wrapper`}
       >
           <div className="header-and-banner">
-            <Header className="app-header" pathname={pathname} toggleMobileNav={toggleMobileNav} />
+            <Header className="app-header" pathname={pathname} toggleMobileNav={toggleMobileNav} onLogout={() => { /* handle logout */ }} />
           </div>
           <div className="side-menu-and-main">
-            <main
-              style={{
-                marginTop: `${headerAndBannerHeight}px`,
-              }}
-            >
+            <main>
               <div className="content-container">{children}</div>
               <Footer />
             </main>
