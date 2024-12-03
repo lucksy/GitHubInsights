@@ -18,7 +18,7 @@ import {
     TooltipItem
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
-import './Dashboard.css';
+import './dashboard.css';
 
 ChartJS.register(
   CategoryScale,
