@@ -1,192 +1,182 @@
-import { useEffect, useState } from 'react'
-import { 
-  TdsCard,
-  TdsMessage,
-  TdsSpinner,
-} from '@scania/tegel-react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { TdsCard, TdsSpinner, TdsMessage } from '@scania/tegel-react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line, Doughnut } from 'react-chartjs-2';
 
-interface UserData {
-  name?: string;
-  login: string;
-  public_repos: number;
-  followers: number;
-  avatar_url: string;
-  html_url: string;
-  repos_url: string;
-}
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-interface Repository {
-  id: number;
-  name: string;
-  description: string;
-  html_url: string;
-  stargazers_count: number;
-  updated_at: string;
-}
-
-export default function Dashboard() {
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [repos, setRepos] = useState<Repository[]>([])
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+const GitHubDashboard = () => {
+  interface GitHubUser {
+    public_repos: number;
+    followers: number;
+    following: number;
+  }
+  
+  const [userData, setUserData] = useState<GitHubUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('github_token')
-      
-      if (!token) {
-        navigate('/login')
-        return
-      }
-
+      const token = localStorage.getItem('github_token');
       try {
         const userResponse = await fetch('https://api.github.com/user', {
           headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token ${token}`
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
           }
-        })
-
-        if (!userResponse.ok) {
-          if (userResponse.status === 401) {
-            localStorage.removeItem('github_token')
-            navigate('/login')
-            throw new Error('Authentication failed. Please log in again.')
-          }
-          throw new Error(`Failed to fetch user data: ${userResponse.statusText}`)
-        }
-        
-        const userData = await userResponse.json()
-        setUserData(userData)
-
-        // Fetch repositories with correct Bearer token format
-        const reposResponse = await fetch(userData.repos_url, {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token ${token}`
-          }
-        })
-
-        if (!reposResponse.ok) {
-          throw new Error(`Failed to fetch repositories: ${reposResponse.statusText}`)
-        }
-
-        const reposData = await reposResponse.json()
-        setRepos(reposData)
-
+        });
+        const userData = await userResponse.json();
+        setUserData(userData);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data'
-        setError(errorMessage)
-        console.error('Error fetching data:', errorMessage)
+        setError('Failed to fetch GitHub data');
+        console.error(err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [navigate])
+    fetchData();
+  }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <TdsSpinner></TdsSpinner>
-      </div>
-    )
-  }
+  const commitData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [{
+      label: 'Commits',
+      data: [25, 22, 30, 18, 20, 24],
+      borderColor: '#0A1F44',
+      backgroundColor: '#0A1F44',
+      tension: 0.4,
+    }],
+  };
 
-  if (error) {
-    return (
-      <div className="max-w-[800px] mx-auto p-4">
-        <TdsMessage variant="error">
-          Error loading dashboard: {error}
-        </TdsMessage>
-      </div>
-    )
-  }
+  const lineOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+    },
+    scales: {
+      y: { beginAtZero: true },
+    },
+  };
 
-  if (!userData) {
-    return (
-      <div className="max-w-[800px] mx-auto p-4">
-        <TdsMessage variant="error">
-          No user data available. Please try logging in again.
-        </TdsMessage>
-      </div>
-    )
-  }
+  const languageData = {
+    labels: ['JavaScript', 'HTML'],
+    datasets: [{
+      data: [65, 35],
+      backgroundColor: ['#1f77b4', '#aec7e8'],
+      borderWidth: 0,
+    }],
+  };
+
+  const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+    },
+    cutout: '70%',
+  };
+
+  if (loading) return <div className="tds-u-p4 tds-u-text-center"><TdsSpinner /></div>;
+  if (error) return <TdsMessage variant="error">{error}</TdsMessage>;
 
   return (
-    <div className="max-w-[800px] mx-auto p-4">
-      {/* User Profile Card */}
-      <TdsCard>
-        <div className="flex items-start gap-6 p-4">
-          {userData.avatar_url && (
-            <img 
-              src={userData.avatar_url} 
-              alt={userData.name || userData.login}
-              className="w-24 h-24 rounded-full"
-              style={{ width: '96px', height: '96px' }}
-            />
-          )}
-          <div>
-            <h1 className="text-2xl font-semibold">
-              {userData.name || userData.login}
-            </h1>
-            <div className="mt-2 text-gray-600">
-              {userData.public_repos} repositories • {userData.followers} followers
-            </div>
-            <a 
-              href={userData.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-block text-blue-600 hover:text-blue-800"
-            >
-              View GitHub Profile →
-            </a>
+    <div className="tds-grid-container" style={{ flexDirection: 'column' }}>
+        <h1 className="tds-u-mb4 tds-headline-01">MY GITHUB SUMMARY</h1>
+        
+        {/* Stats Grid */}
+        <div className="tds-grid-fluid tds-u-pb3">
+          <div className="tds-grid-item tds-u-flex tds-u-flex-dir-col" style={{ gridColumn: 'span 3' }}>
+            <TdsCard header="Number of projects">
+              <div slot="body">
+                <p className="tds-headline-02">
+                  {userData?.public_repos || 0}
+                </p>
+              </div>
+            </TdsCard>
+          </div>
+          
+          <div className="tds-grid-item" style={{ gridColumn: 'span 3' }}>
+            <TdsCard header="Total commits this year">
+              <div slot="body">
+                <p className="tds-headline-02">21,212</p>
+              </div>
+            </TdsCard>
+          </div>
+          
+          <div className="tds-grid-item" style={{ gridColumn: 'span 3' }}>
+            <TdsCard header="Followers">
+              <div slot="body">
+                <p className="tds-headline-02">
+                  {userData?.followers || 0}
+                </p>
+              </div>
+            </TdsCard>
+          </div>
+          
+          <div className="tds-grid-item" style={{ gridColumn: 'span 3' }}>
+            <TdsCard header="Following">
+              <div slot="body">
+                <p className="tds-headline-02">
+                  {userData?.following || 0}
+                </p>
+              </div>
+            </TdsCard>
           </div>
         </div>
-      </TdsCard>
 
-      {/* Repositories Table */}
-      {repos.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold mb-4">Your Repositories</h2>
-          <TdsCard>
-            <div className="overflow-x-auto p-4">
-              <table className="min-w-full">
-                <thead>
-                  <tr>
-                    <th className="text-left p-2">Repository</th>
-                    <th className="text-left p-2">Description</th>
-                    <th className="text-left p-2">Stars</th>
-                    <th className="text-left p-2">Last Updated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {repos.map((repo) => (
-                    <tr key={repo.id}>
-                      <td className="p-2">
-                        <a 
-                          href={repo.html_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          {repo.name}
-                        </a>
-                      </td>
-                      <td className="p-2">{repo.description || 'No description'}</td>
-                      <td className="p-2">{repo.stargazers_count}</td>
-                      <td className="p-2">{new Date(repo.updated_at).toLocaleDateString()}</td>
-                    </tr>
+        {/* Charts Grid */}
+        <div className="tds-grid-fluid tds-u-pb3">
+          <div className="tds-grid-item" style={{ gridColumn: 'span 9' }}>
+            <TdsCard header="Commit count">
+              <div slot="body" style={{ height: '300px' }}>
+                <Line data={commitData} options={lineOptions} />
+              </div>
+            </TdsCard>
+          </div>
+
+          <div className="tds-grid-item" style={{ gridColumn: 'span 3' }}>
+            <TdsCard header="Programming languages">
+              <div slot="body" style={{ height: '300px' }}>
+                <Doughnut data={languageData} options={doughnutOptions} />
+                <div className="tds-u-flex tds-u-justify-content-center tds-u-gap2 tds-u-mt2">
+                  {languageData.labels.map((label, index) => (
+                    <div key={index} className="tds-u-flex tds-u-items-center tds-u-gap1">
+                      <div 
+                        className="tds-u-w1 tds-u-h1 tds-u-rounded-full" 
+                        style={{ backgroundColor: languageData.datasets[0].backgroundColor[index] }}
+                      />
+                      <span>{languageData.datasets[0].data[index]}% {label}</span>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </TdsCard>
+                </div>
+              </div>
+            </TdsCard>
+          </div>
         </div>
-      )}
     </div>
-  )
-}
+  );
+};
+
+export default GitHubDashboard;

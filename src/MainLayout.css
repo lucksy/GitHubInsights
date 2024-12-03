@@ -99,7 +99,6 @@ main {
   display: flex;
   flex: 1;
   flex-direction: column;
-  max-width: 600px;
   padding: 24px;
 }
 

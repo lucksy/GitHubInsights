@@ -14,7 +14,7 @@ const MainLayout = ({ onLogout }: MainLayoutProps) => {
         toggleMobileNav={() => {}} 
         onLogout={onLogout}
       />
-      <main className="flex-grow">
+      <main>
         <Outlet />
       </main>
       <Footer />
