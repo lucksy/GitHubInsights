@@ -1,59 +1,119 @@
 .commit-history {
-    max-width: 1200px;
+    max-width: 800px;
     margin: 0 auto;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    background: #fff;
+  }
+  
+  .filters-container {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    padding: 16px 0;
   }
   
   .search-container {
-    max-width: 400px;
+    max-width: 300px;
+  }
+  
+  .search-container :global(.tds-textfield) {
+    width: 100%;
+  }
+  
+  .date-filters {
+    display: flex;
+    gap: 16px;
   }
   
   .commits-container {
-    flex: 1;
-    background: white;
-    border-radius: 8px;
+    position: relative;
   }
   
   .date-group {
-    padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #edf0f2;
+    padding-bottom: 8px;
   }
   
-  .date-group:last-child {
-    border-bottom: none;
+  .date-group h2 {
+    color: #1B273D;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 16px;
   }
   
   .commit-item {
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f2f4;
   }
   
   .commit-item:last-child {
     border-bottom: none;
   }
   
-  .commit-message {
-    color: #1a202c;
-    line-height: 1.5;
-    word-break: break-word;
+  .commit-item img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 16px;
+    flex-shrink: 0;
   }
   
-  .pagination-container {
+  .commit-message {
+    font-size: 14px;
+    color: #1B273D;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  
+  .commit-item .text-gray-500 {
+    font-size: 13px;
+    color: #6B7280;
+  }
+  
+  .commit-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  /* Loading overlay */
+  .commits-container .absolute {
+    backdrop-filter: blur(2px);
+  }
+  
+  /* Pagination styles */
+  .sticky {
     position: sticky;
     bottom: 0;
-    background: white;
-    padding: 16px;
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 16px 0;
+    background: #fff;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.05);
   }
   
+  /* Empty state */
+  .text-center {
+    padding: 32px 0;
+    color: #6B7280;
+    font-size: 14px;
+  }
+  
+  /* Responsive adjustments */
   @media (max-width: 768px) {
     .commit-history {
       padding: 16px;
     }
   
-    .commit-item {
-      padding: 12px;
+    .date-filters {
+      flex-direction: column;
+    }
+  
+    .search-container {
+      max-width: 100%;
+    }
+  
+    .filters-container {
+      padding: 12px 0;
     }
   }

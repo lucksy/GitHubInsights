@@ -26,3 +26,16 @@
     font-size: 50px !important;
   }
 }
+
+.footerTop {
+  background-color: var(--tds-footer-top-background);
+}
+
+.tds-headline-03 {
+  font-size: 20px;
+}
+@media (min-width: 1380px) {
+  .tds-headline-03 {
+    font-size: 24px;
+  }
+}

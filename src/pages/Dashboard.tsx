@@ -95,13 +95,13 @@ const GitHubDashboard = () => {
     return () => clearInterval(intervalId);
   }, [fetchDashboardData]);
 
-  const getLast6Months = () => {
+  const getLast12Months = () => {
     const months = [];
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const now = new Date();
     const currentMonth = now.getMonth();
     
-    for (let i = 5; i >= 0; i--) {
+    for (let i = 11; i >= 0; i--) {
       const monthIndex = (currentMonth - i + 12) % 12;
       months.push(monthNames[monthIndex]);
     }
@@ -115,7 +115,7 @@ const GitHubDashboard = () => {
     return `${minutes} minutes`;
   };
 
-  const last6Months = getLast6Months();
+  const last6Months = getLast12Months();
 
   const commitData = {
     labels: last6Months,
@@ -191,6 +191,7 @@ const GitHubDashboard = () => {
       legend: { display: false },
     },
     cutout: '75%',
+    height: 200,
   };
 
   if (loading) return <div className="tds-u-p4 tds-u-text-center sm"><TdsSpinner /></div>;
@@ -266,7 +267,9 @@ const GitHubDashboard = () => {
           <h2 className="tds-u-mb4 tds-headline-03">Programming Languages <TdsIcon name="redirect" /></h2>
           <TdsCard header="Composition" modeVariant='secondary'>
             <div slot="body" style={{ height: '300px', padding: '20px' }}>
-              <Doughnut data={languageData} options={doughnutOptions} />
+                <div style={{ height: '250px', paddingBottom: '20px' }}>
+                    <Doughnut data={languageData} options={doughnutOptions} />
+              </div>
               <div className="tds-u-flex tds-u-justify-content-center tds-u-gap2 tds-u-mt4">
                 {Object.entries(topLanguages).map(([language, percentage], index) => (
                   <div key={index} className="tds-u-flex tds-u-items-center tds-u-gap1 tds-u-mb4">
@@ -285,8 +288,8 @@ const GitHubDashboard = () => {
         </div>
       </div>
 
-      <div className="tds-grid-fluid tds-u-p3 tds-u-mb1 tds-u-ml1">
-        <div className="tds-grid-item w-full flex justify-center items-center gap-2" style={{ gridColumn: 'span 12' }}>
+      <div className="tds-grid-fluid tds-u-p1 tds-u-mt3 footerTop footerTop">
+        <div className="tds-grid-item w-full flex justify-center items-center gap-2 tds-u-p3" style={{ gridColumn: 'span 12' }}>
           <TdsIcon name="clock" className="text-gray-500" />
           <span className="text-sm text-gray-500 tds-u-m1">
             Last updated: {lastRefresh.toLocaleString()} • Next refresh in: {getTimeUntilNextRefresh()}

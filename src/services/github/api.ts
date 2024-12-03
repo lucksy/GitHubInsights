@@ -70,9 +70,24 @@ class GitHubService {
         username: string,
         page: number = 1,
         perPage: number = 30,
-        searchTerm: string = ''
+        searchTerm: string = '',
+        startDate: Date | null = null,
+        endDate: Date | null = null
     ): Promise<SearchCommitsResponse> {
-        const query = `author:${username}${searchTerm ? ` ${searchTerm} in:message` : ''}`;
+        let query = `author:${username}`;
+
+        if (searchTerm) {
+            query += ` ${searchTerm} in:message`;
+        }
+
+        if (startDate) {
+            query += ` committer-date:>=${startDate.toISOString().split('T')[0]}`;
+        }
+
+        if (endDate) {
+            query += ` committer-date:<=${endDate.toISOString().split('T')[0]}`;
+        }
+
         const url = `${this.baseUrl}/search/commits?q=${encodeURIComponent(query)}&sort=author-date&order=desc&page=${page}&per_page=${perPage}`;
 
         return this.fetchJson<SearchCommitsResponse>(url, {
