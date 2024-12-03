@@ -1,17 +1,14 @@
+// src/pages/Login.tsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import AuthLayout from '../layouts/AuthLayout';
 import { TdsMessage } from '@scania/tegel-react';
 
-interface LoginProps {
-  onLogin: () => void;
-}
-
-export default function Login({ onLogin }: LoginProps) {
-  const [token, setToken] = useState(''); // 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
+const Login = () => {
+  const [token, setToken] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     if (!token.trim()) {
@@ -23,26 +20,10 @@ export default function Login({ onLogin }: LoginProps) {
     setError('');
 
     try {
-      const response = await fetch('https://api.github.com/user', {
-        headers: {
-          'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `token ${token.trim()}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.id) {
-        localStorage.setItem('github_token', token.trim());
-        localStorage.setItem('github_user', JSON.stringify(data));
-        onLogin();
-        navigate('/dashboard');
-      } else {
-        setError(data.message || 'Invalid GitHub token');
-      }
+      await login(token.trim());
     } catch (err) {
-      console.error(err);
-      setError('Failed to authenticate');
+      console.error('Login error:', err);
+      setError('Invalid GitHub token');
     } finally {
       setIsLoading(false);
     }
@@ -93,4 +74,6 @@ export default function Login({ onLogin }: LoginProps) {
       </div>
     </AuthLayout>
   );
-}
+};
+
+export default Login;

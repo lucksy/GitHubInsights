@@ -9,63 +9,33 @@ import {
   TdsHeaderBrandSymbol,
   TdsIcon,
 } from '@scania/tegel-react';
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { GitHubUser } from '../types/github';
 
 interface HeaderProps {
   className?: string;
   pathname: string;
   toggleMobileNav: () => void;
-  onLogout: () => void;
 }
 
-interface UserData {
-  name?: string;
-  login: string;
-  company?: string;
-}
-
-const Header = ({ className, toggleMobileNav, onLogout }: HeaderProps) => {
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const isAuthenticated = !!localStorage.getItem('github_token');
-  const navigate = useNavigate();
+const Header = ({ className, toggleMobileNav }: HeaderProps) => {
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem('github_token');
-      if (!token) return;
-
-      try {
-        const response = await fetch('https://api.github.com/user', {
-          headers: {
-            'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `token ${token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-        const data = await response.json();
-        setUserData(data);
-      } catch (error) {
-        console.error('Failed to fetch user data:', error);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchUserData();
-    }
-  }, [isAuthenticated]);
-
   const handleLogout = () => {
-    localStorage.removeItem('github_token');
-    setUserData(null);
-    if (onLogout) {
-      onLogout();
-    }
-    navigate('/login', { replace: true });
+    logout();
+  };
+
+  const getUserDisplayName = (user: GitHubUser | null) => {
+    if (!user) return 'Not Logged In';
+    return user.name || user.login;
+  };
+
+  const getUserCompany = (user: GitHubUser | null) => {
+    if (!user) return 'No Company Listed';
+    return user.company || 'No Company Listed';
   };
 
   return (
@@ -91,8 +61,8 @@ const Header = ({ className, toggleMobileNav, onLogout }: HeaderProps) => {
             </div>
             <TdsHeaderDropdownList size="lg">
               <TdsHeaderDropdownListUser
-                header={userData ? (userData.name || userData.login) : 'Not Logged In'}
-                subheader={userData?.company || 'No Company Listed'}
+                header={getUserDisplayName(user)}
+                subheader={getUserCompany(user)}
               />
               <TdsHeaderDropdownListItem>
                 <a href="/settings">

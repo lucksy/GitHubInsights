@@ -26,7 +26,7 @@ const MainLayout = ({
         className={`mode-variant-wrapper`}
       >
           <div className="header-and-banner">
-            <Header className="app-header" pathname={pathname} toggleMobileNav={toggleMobileNav} onLogout={() => { /* handle logout */ }} />
+            <Header className="app-header" pathname={pathname} toggleMobileNav={toggleMobileNav} />
           </div>
           <div className="side-menu-and-main">
             <main>
