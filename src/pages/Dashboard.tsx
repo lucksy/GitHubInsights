@@ -286,6 +286,7 @@ const GitHubDashboard = () => {
             modeVariant='secondary'
             onClick={() => navigate('/commits')}
             data-testid="projects-card"
+            style={{ cursor: 'pointer' }}
           >
             <div slot="body">
               <p className="tds-headline-01">{user?.public_repos || 0}</p>
@@ -313,6 +314,7 @@ const GitHubDashboard = () => {
             modeVariant='secondary'
             onClick={() => navigate('/commits')}
             data-testid="followers-card"
+            style={{ cursor: 'pointer' }}
           >
             <div slot="body">
               <p className="tds-headline-01">{user?.followers || 0}</p>
@@ -326,6 +328,7 @@ const GitHubDashboard = () => {
             modeVariant='secondary'
             onClick={() => navigate('/commits')}
             data-testid="following-card"
+            style={{ cursor: 'pointer' }}
           >
             <div slot="body">
               <p className="tds-headline-01">{user?.following || 0}</p>
