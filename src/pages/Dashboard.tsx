@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { TdsCard, TdsSpinner, TdsMessage, TdsIcon } from '@scania/tegel-react';
 import { useAuth } from '../contexts/AuthContext';
 import { githubService } from '../services/github/api';
+import { useNavigate } from 'react-router-dom';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -42,6 +43,8 @@ const GitHubDashboard = () => {
   const [languageStats, setLanguageStats] = useState<Record<string, number>>({});
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchDashboardData = useCallback(async () => {
     if (!token || !user) {
@@ -120,7 +123,7 @@ const GitHubDashboard = () => {
       label: 'Commits',
       data: last6Months.map(month => monthlyCommits[month] || 0),
       backgroundColor: last6Months.map((_, index) => 
-        index === last6Months.length - 4 ? '#0A1F44' : '#D9E0EA'
+        index === last6Months.length - 2 ? '#0A1F44' : '#D9E0EA'
       ),
       borderRadius: 0,
       barThickness: 20,
@@ -221,7 +224,7 @@ const GitHubDashboard = () => {
         </div>
         
         <div className="tds-grid-item">
-          <TdsCard header="Total commits this year" modeVariant='secondary'>
+          <TdsCard header="Total commits this year" modeVariant='secondary' onClick={() => navigate('/commits')}>
             <div slot="body">
               <p className="tds-headline-01">{totalCommits.toLocaleString()}</p>
             </div>
@@ -285,7 +288,7 @@ const GitHubDashboard = () => {
       <div className="tds-grid-fluid tds-u-p3 tds-u-mb1 tds-u-ml1">
         <div className="tds-grid-item w-full flex justify-center items-center gap-2" style={{ gridColumn: 'span 12' }}>
           <TdsIcon name="clock" className="text-gray-500" />
-          <span className="text-sm text-gray-500 tds-u-ml1">
+          <span className="text-sm text-gray-500 tds-u-m1">
             Last updated: {lastRefresh.toLocaleString()} • Next refresh in: {getTimeUntilNextRefresh()}
           </span>
           <button

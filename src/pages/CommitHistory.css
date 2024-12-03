@@ -1,0 +1,59 @@
+.commit-history {
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .search-container {
+    max-width: 400px;
+  }
+  
+  .commits-container {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+  }
+  
+  .date-group {
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .date-group:last-child {
+    border-bottom: none;
+  }
+  
+  .commit-item {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .commit-item:last-child {
+    border-bottom: none;
+  }
+  
+  .commit-message {
+    color: #1a202c;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  
+  .pagination-container {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 16px;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    .commit-history {
+      padding: 16px;
+    }
+  
+    .commit-item {
+      padding: 12px;
+    }
+  }

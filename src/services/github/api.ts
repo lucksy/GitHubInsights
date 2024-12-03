@@ -1,4 +1,9 @@
-import { GitHubUser, Repository, Commit } from './types';
+import {
+    GitHubUser,
+    Repository,
+    Commit,
+    SearchCommitsResponse
+} from './types';
 
 class GitHubService {
     private static instance: GitHubService;
@@ -18,21 +23,22 @@ class GitHubService {
         this.token = token;
     }
 
-    private getHeaders(): HeadersInit {
+    private getHeaders(additionalHeaders: HeadersInit = {}): HeadersInit {
         if (!this.token) {
             throw new Error('No authentication token set');
         }
 
         return {
             'Authorization': `token ${this.token}`,
-            'Accept': 'application/vnd.github.v3+json'
+            'Accept': 'application/vnd.github.v3+json',
+            ...additionalHeaders
         };
     }
 
     private async fetchJson<T>(url: string, options: RequestInit = {}): Promise<T> {
         const response = await fetch(url, {
             ...options,
-            headers: this.getHeaders()
+            headers: this.getHeaders(options.headers)
         });
 
         if (!response.ok) {
@@ -57,6 +63,23 @@ class GitHubService {
         return this.fetchJson<Repository[]>(
             `${this.baseUrl}/users/${username}/repos?per_page=100`
         );
+    }
+
+    // Search commits method
+    async searchUserCommits(
+        username: string,
+        page: number = 1,
+        perPage: number = 30,
+        searchTerm: string = ''
+    ): Promise<SearchCommitsResponse> {
+        const query = `author:${username}${searchTerm ? ` ${searchTerm} in:message` : ''}`;
+        const url = `${this.baseUrl}/search/commits?q=${encodeURIComponent(query)}&sort=author-date&order=desc&page=${page}&per_page=${perPage}`;
+
+        return this.fetchJson<SearchCommitsResponse>(url, {
+            headers: {
+                'Accept': 'application/vnd.github.cloak-preview'
+            }
+        });
     }
 
     // Commit methods
@@ -138,6 +161,13 @@ class GitHubService {
             totalCommits,
             monthlyCommits: commits
         };
+    }
+
+    // Repository languages
+    async getRepositoryLanguages(owner: string, repo: string): Promise<Record<string, number>> {
+        return this.fetchJson<Record<string, number>>(
+            `${this.baseUrl}/repos/${owner}/${repo}/languages`
+        );
     }
 }
 

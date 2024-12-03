@@ -32,3 +32,26 @@ export interface Commit {
         message: string;
     };
 }
+
+export interface SearchCommitsResponse {
+    total_count: number;
+    items: CommitItem[];
+}
+
+export interface CommitItem {
+    sha: string;
+    commit: {
+        author: {
+            name: string;
+            date: string;
+        };
+        message: string;
+    };
+    author: {
+        avatar_url: string;
+        login: string;
+    };
+    repository: {
+        name: string;
+    };
+}

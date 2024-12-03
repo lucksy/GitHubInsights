@@ -20,6 +20,7 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/commits" element={<CommitHistory />} />
             <Route path="/commits/:repo" element={<CommitHistory />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
