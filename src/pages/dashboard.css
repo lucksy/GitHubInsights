@@ -1,0 +1,22 @@
+
+
+.mobile-shink {
+  grid-template-columns: repeat(1, 1fr);
+}
+@media (min-width: 768px) {
+  .mobile-shink {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .mobile-shink  {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .mobile-shink {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
