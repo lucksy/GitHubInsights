@@ -55,16 +55,13 @@ npm run dev
 
 ## E2E Tests
 
-The project includes the following end-to-end tests to ensure the critical functionality is working as expected:
+The project includes end-to-end tests to ensure key features work as expected:
 
-1. Authentication Flow Test:
-   - Description: This test verifies the authentication flow of the application, ensuring that users can log in with a valid GitHub access token and are redirected to the dashboard with their GitHub information displayed.
+1. Authentication Flow: Verifies users can log in with a valid GitHub token and see their GitHub data on the dashboard.
 
-2. Commit History Filtering Test:
-   - Description: This test verifies the functionality of the commit history filtering feature, ensuring that users can search for specific commits and set a date range to filter the commit history results.
+2. Commit History Filtering: Ensures users can search commits and filter by date range and navigate to real commit page on Github
 
-3. Programming Language Chart Test:
-   - Description: This test verifies the display and interactivity of the programming language composition chart on the dashboard, ensuring that the chart accurately reflects the user's repository languages and provides tooltips on hover.
+3. Dashboard Components Test: Verifies the presence and functionality of all dashboard components.
 
 ## Technologies Used
 
@@ -76,15 +73,27 @@ The project includes the following end-to-end tests to ensure the critical funct
 - Chart.js: JavaScript charting library for creating interactive charts
 - GitHub API: REST API for accessing GitHub data
 
-## Design Patterns Used:
-- Singleton Pattern: Single instance of GitHubService
-- Repository Pattern: Centralized data access layer
-- Service Layer Pattern: Abstraction for API operations
-- Factory Pattern (in a way): Centralized object creation
+## Caching for performance and to provide a better user experience with smooth navigation.:
+### Implemented caching for the GitHub dashboard data using localStorage and add a timestamp to control cache validity.
+
+- Cache duration set to 15 minutes
+- Stores data in localStorage
+- Includes timestamp for cache validation
+
+Cache management:
+- Automatic cache invalidation after 15 minutes
+- Error handling for corrupted cache
+- Cache clearing on errors
+
+Optimized data fetching:
+- Checks cache before making API calls
+- Forces fetch on manual refresh
+- Forces fetch on interval refresh
 
 ## Design Patterns Used:
 - Singleton Pattern: Single instance of GitHubService
 - Repository Pattern: Centralized data access layer
 - Service Layer Pattern: Abstraction for API operations
 - Factory Pattern (in a way): Centralized object creation
+
 
