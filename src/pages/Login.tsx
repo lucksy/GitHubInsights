@@ -45,7 +45,7 @@ const Login = () => {
 
         <div className="space-y-4">
           <input
-            type="text"
+            type="password"
             className="w-full p-2 border rounded"
             value={token}
             onChange={(e) => setToken(e.target.value)}
