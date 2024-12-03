@@ -6,9 +6,21 @@
 .mobile-shink .tds-headline-01 {
   font-size: 40px !important; color: var(--tds-grey-958);
 }
+.mobile-shink-2row .commit-count {
+  grid-column: span 12;
+}
+.mobile-shink-2row .composition {
+grid-column: span 12;
+}
 @media (min-width: 768px) {
   .mobile-shink {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .mobile-shink-2row .commit-count {
+      grid-column: span 6;
+  }
+  .mobile-shink-2row .composition {
+    grid-column: span 6;
   }
 }
 
@@ -16,6 +28,12 @@
   .mobile-shink  {
     grid-template-columns: repeat(4, 1fr);
   }
+  .mobile-shink-2row .commit-count {
+    grid-column: span 9;
+}
+.mobile-shink-2row .composition {
+  grid-column: span 3;
+}
 }
 
 @media (min-width: 1200px) {
@@ -26,6 +44,8 @@
     font-size: 50px !important;
   }
 }
+
+
 
 .footerTop {
   background-color: var(--tds-footer-top-background);
@@ -42,4 +62,8 @@
 
 .card .card-heade, .card .header-subheader .header, .card .header-subheader slot[name=header] {
   font: var(--tds-headline-04) !important;
+}
+
+.dashboard-container {
+  flex-direction: column;
 }

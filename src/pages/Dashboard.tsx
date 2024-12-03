@@ -257,32 +257,37 @@ const GitHubDashboard = () => {
     height: 200,
   };
 
-  if (loading) return <div className="tds-u-p4 tds-u-text-center sm"><TdsSpinner /></div>;
-  if (error) return <TdsMessage variant="error">{error}</TdsMessage>;
+  if (loading) return (
+    <div className="tds-u-p4 tds-u-text-center sm" data-testid="loading-spinner">
+      <TdsSpinner />
+    </div>
+  );
+  
+  if (error) return (
+    <TdsMessage variant="error" data-testid="error-message">{error}</TdsMessage>
+  );
 
   return (
-    <div className="tds-grid-container" style={{ flexDirection: 'column' }}>
+    <div className="tds-grid-container dashboard-container" data-testid="dashboard-container">
       <div className="tds-grid-fluid tds-u-pb3 mobile-shink">
         <div className="tds-grid-item">
           <div className="flex justify-between items-center">
-            <h1 className="tds-u-mb4 tds-headline-01">MY GITHUB SUMMARY</h1>
+            <h1 className="tds-u-mb4 tds-headline-01" data-testid="dashboard-title">
+              MY GITHUB SUMMARY
+            </h1>
           </div>
         </div>
       </div>
-      
-      <div className="tds-grid-fluid tds-u-pb3 mobile-shink">
-        <div className="tds-grid-item">
-          <h2 className="tds-u-mb4 tds-headline-03">Summary</h2>
-        </div>
-      </div>
 
-      <div className="tds-grid-fluid tds-u-pb3 mobile-shink">
+      <div className="tds-grid-fluid tds-u-pb3 mobile-shink" data-testid="stat-cards">
         <div className="tds-grid-item">
-          <TdsCard header="Number of projects" modeVariant='secondary'>
+          <TdsCard 
+            header="Number of projects" 
+            modeVariant='secondary'
+            data-testid="projects-card"
+          >
             <div slot="body">
-              <p className="tds-headline-01">
-                {user?.public_repos || 0}
-              </p>
+              <p className="tds-headline-01">{user?.public_repos || 0}</p>
             </div>
           </TdsCard>
         </div>
@@ -293,6 +298,7 @@ const GitHubDashboard = () => {
             modeVariant='secondary'
             onClick={() => navigate('/commits')}
             style={{ cursor: 'pointer' }}
+            data-testid="commits-card"
           >
             <div slot="body">
               <p className="tds-headline-01">{totalCommits.toLocaleString()}</p>
@@ -301,46 +307,58 @@ const GitHubDashboard = () => {
         </div>
         
         <div className="tds-grid-item">
-          <TdsCard header="Followers" modeVariant='secondary'>
+          <TdsCard 
+            header="Followers" 
+            modeVariant='secondary'
+            data-testid="followers-card"
+          >
             <div slot="body">
-              <p className="tds-headline-01">
-                {user?.followers || 0}
-              </p>
+              <p className="tds-headline-01">{user?.followers || 0}</p>
             </div>
           </TdsCard>
         </div>
         
         <div className="tds-grid-item">
-          <TdsCard header="Following" modeVariant='secondary'>
+          <TdsCard 
+            header="Following" 
+            modeVariant='secondary'
+            data-testid="following-card"
+          >
             <div slot="body">
-              <p className="tds-headline-01">
-                {user?.following || 0}
-              </p>
+              <p className="tds-headline-01">{user?.following || 0}</p>
             </div>
           </TdsCard>
         </div>
       </div>
 
-      <div className="tds-grid-fluid tds-u-pb3">
-        <div className="tds-grid-item" style={{ gridColumn: 'span 9' }}>
-          <h2 className="tds-u-mb4 tds-headline-03">Commit count <TdsIcon name="redirect" /></h2>
+      <div className="tds-grid-fluid tds-u-pb3 mobile-shink-2row">
+        <div className="tds-grid-item commit-count">
+          <h2 className="tds-u-mb4 tds-headline-03" data-testid="commits-chart-title">
+            Commit count <TdsIcon name="redirect" />
+          </h2>
           <TdsCard header="Months" modeVariant='secondary'>
-            <div slot="body" style={{ height: '300px', padding: '20px' }}>
+            <div slot="body" style={{ height: '300px', padding: '20px' }} data-testid="bar-chart-container">
               <Bar data={commitData} options={barOptions} />
             </div>
           </TdsCard>
         </div>
 
-        <div className="tds-grid-item" style={{ gridColumn: 'span 3' }}>
-          <h2 className="tds-u-mb4 tds-headline-03">Programming Languages <TdsIcon name="redirect" /></h2>
+        <div className="tds-grid-item composition">
+          <h2 className="tds-u-mb4 tds-headline-03" data-testid="languages-chart-title">
+            Programming Languages <TdsIcon name="redirect" />
+          </h2>
           <TdsCard header="Composition" modeVariant='secondary'>
-            <div slot="body" style={{ height: '300px', padding: '20px' }}>
+            <div slot="body" style={{ height: '300px', padding: '20px' }} data-testid="doughnut-chart-container">
               <div style={{ height: '250px', paddingBottom: '20px' }}>
                 <Doughnut data={languageData} options={doughnutOptions} />
               </div>
               <div className="tds-u-flex tds-u-justify-content-center tds-u-gap2 tds-u-mt4">
                 {Object.entries(topLanguages).map(([language, percentage], index) => (
-                  <div key={index} className="tds-u-flex tds-u-items-center tds-u-gap1 tds-u-mb4">
+                  <div 
+                    key={index} 
+                    className="tds-u-flex tds-u-items-center tds-u-gap1 tds-u-mb4"
+                    data-testid={`language-item-${index}`}
+                  >
                     <div 
                       className="tds-u-w1 tds-u-h1 tds-u-rounded-full" 
                       style={{ 
@@ -359,16 +377,17 @@ const GitHubDashboard = () => {
       <div className="tds-grid-fluid tds-u-p1 tds-u-mt3 footerTop">
         <div className="tds-grid-item w-full flex justify-center items-center gap-2 tds-u-p3" style={{ gridColumn: 'span 12' }}>
           <TdsIcon name="clock" className="text-gray-500" />
-          <span className="text-sm text-gray-500 tds-u-m1">
+          <span className="text-sm text-gray-500 tds-u-m1" data-testid="last-updated">
             Last updated: {lastRefresh.toLocaleString()} • Next refresh in: {getTimeUntilNextRefresh()}
           </span>
           <button
             onClick={handleRefreshClick}
             disabled={isRefreshing}
             className="flex items-center gap-1 p-2 rounded hover:bg-gray-100"
+            data-testid="refresh-button"
           >
             <TdsIcon name="refresh" />
-            {isRefreshing ? 'Refreshing...' : 'Refresh now'}
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh now'}</span>
           </button>
         </div>
       </div>
